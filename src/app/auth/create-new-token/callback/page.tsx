@@ -31,6 +31,7 @@ const CallbackPage = () => {
           setError("Failed to fetch tokens.");
         }
       } catch (err) {
+        console.log(err);
         setError("Error occurred while fetching tokens.");
       } finally {
         setIsLoading(false);
