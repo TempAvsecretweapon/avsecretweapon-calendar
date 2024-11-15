@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { Button, Input, Box, FormControl, FormLabel, Text } from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
-import { generateAuthUrl } from "@/app/lib/google-oauth";
 
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar",
