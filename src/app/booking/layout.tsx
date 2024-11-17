@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Box, Flex } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 
 interface LayoutProps {
   children: ReactNode;
