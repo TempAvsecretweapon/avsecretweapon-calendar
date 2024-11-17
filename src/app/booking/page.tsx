@@ -160,7 +160,7 @@ const BookingPage = () => {
   };
 
   return (
-    <Box width={{ base: "100%", md: "50vw" }}>
+    <Box width={{ base: "100%", md: "60vw" }}>
       <Text
         fontSize={"35px"}
         fontWeight={"bold"}
@@ -242,7 +242,7 @@ const BookingPage = () => {
                 {resources
                   .filter((resource: any) => resource.name.includes("Tech"))
                   .map((resource: any) => (
-                    <Flex key={resource._id} alignItems="center" py={2}>
+                    <Flex key={resource._id} alignItems="center">
                       <input
                         type="checkbox"
                         checked={selectedResource === resource._id}
@@ -254,11 +254,11 @@ const BookingPage = () => {
               </Flex>
 
               {/* Line 2: Teams */}
-              <Flex flexWrap="wrap" gap={4}>
+              <Flex flexWrap="wrap" gap={4} mt={4}>
                 {resources
                   .filter((resource: any) => resource.name.includes("Team"))
                   .map((resource: any) => (
-                    <Flex key={resource._id} alignItems="center" py={2}>
+                    <Flex key={resource._id} alignItems="center">
                       <input
                         type="checkbox"
                         checked={selectedResource === resource._id}
