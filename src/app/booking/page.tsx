@@ -28,6 +28,10 @@ import DayTile from "../components/DayTile";
 import TimeTile from "../components/TimeTile";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import axiosClient from "../lib/axios-client";
+
+// @typescript-eslint/no-explicit-any
+// @typescript-eslint/no-unused-vars
 
 const ConfirmModal = ({ show, proceed, confirmation }: any) => {
   const cancelRef = React.useRef<any>();
@@ -91,12 +95,14 @@ const ConfirmModal = ({ show, proceed, confirmation }: any) => {
 
 const confirm = createConfirmation(confirmable(ConfirmModal));
 
-const BookingPage = (props: any) => {
+const BookingPage = () => {
   const [loading, setLoading] = React.useState(false);
   const toast = useToast();
   const [selectedDate, setSelectedDate] = React.useState<any>();
   const [timezone, setTimezone] = React.useState(momentTZ.tz.guess());
   const [availableSlots, setAvailableSlots] = React.useState([]);
+  const [resources, setResources] = React.useState([]);
+  const [selectedResource, setSelectedResource] = React.useState("");
 
   const slots = useMemo(() => {
     return availableSlots.reduce((result: any, slot) => {
@@ -113,19 +119,26 @@ const BookingPage = (props: any) => {
   }, [availableSlots, timezone]);
 
   useEffect(() => {
-    setLoading(true);
-    (async function () {
+    (async function fetchResources() {
       try {
-        setLoading(false);
+        setLoading(true);
+        const response = await axiosClient.get("/api/resources");
+        setResources(response.data);
       } catch (e) {
+        console.log(e);
         toast({
-          title: "Error occurred while loading availability",
+          title: "Failed to load resources.",
           status: "error",
         });
+      } finally {
         setLoading(false);
       }
     })();
   }, []);
+
+  const handleResourceChange = (id: string) => {
+    setSelectedResource(id === selectedResource ? "" : id);
+  };
 
   const bookAppointment = async (date: any) => {
     if (!(await confirm({ confirmation: moment.tz(date, timezone) }))) {
@@ -224,7 +237,43 @@ const BookingPage = (props: any) => {
               </h2>
             </Flex>
             <Box mx="auto" maxWidth="90%" p={4}>
+              {/* Line 1: Level 1 Tech ~ Level 3 Tech */}
+              <Flex flexWrap="wrap" gap={4}>
+                {resources
+                  .filter((resource: any) => resource.name.includes("Tech"))
+                  .map((resource: any) => (
+                    <Flex key={resource._id} alignItems="center" py={2}>
+                      <input
+                        type="checkbox"
+                        checked={selectedResource === resource._id}
+                        onChange={() => handleResourceChange(resource._id)}
+                      />
+                      <Text ml={3}>{resource.name}</Text>
+                    </Flex>
+                  ))}
+              </Flex>
 
+              {/* Line 2: Teams */}
+              <Flex flexWrap="wrap" gap={4}>
+                {resources
+                  .filter((resource: any) => resource.name.includes("Team"))
+                  .map((resource: any) => (
+                    <Flex key={resource._id} alignItems="center" py={2}>
+                      <input
+                        type="checkbox"
+                        checked={selectedResource === resource._id}
+                        onChange={() => handleResourceChange(resource._id)}
+                      />
+                      <Text ml={3}>{resource.name}</Text>
+                    </Flex>
+                  ))}
+              </Flex>
+
+              {resources.length === 0 && (
+                <Box textAlign="center" color="#A8A8A8">
+                  No resources available.
+                </Box>
+              )}
             </Box>
           </Box>
 
@@ -245,10 +294,7 @@ const BookingPage = (props: any) => {
                 </Box>
               </h2>
             </Flex>
-            <Box mx="auto" maxWidth="90%" p={4}>
-
-
-            </Box>
+            <Box mx="auto" maxWidth="90%" p={4}></Box>
           </Box>
 
           <Box borderTop="1px" borderColor="#ebeef1" py="5">
