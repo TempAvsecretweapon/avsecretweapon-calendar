@@ -15,12 +15,19 @@ const AppointmentSchema = new Schema(
       required: true,
     }, // Status options
     googleEventId: { type: String }, // Google Event ID, optional
+    attendees: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Technician",
+      },
+    ],
   },
   {
     timestamps: true, // Automatically adds `createdAt` and `updatedAt`
   }
 );
 
-const Appointment = models.Appointment || model("Appointment", AppointmentSchema);
+const Appointment =
+  models.Appointment || model("Appointment", AppointmentSchema);
 
 export default Appointment;

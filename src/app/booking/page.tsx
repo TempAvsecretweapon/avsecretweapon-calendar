@@ -30,9 +30,6 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import axiosClient from "../lib/axios-client";
 
-// @typescript-eslint/no-explicit-any
-// @typescript-eslint/no-unused-vars
-
 const ConfirmModal = ({ show, proceed, confirmation }: any) => {
   const cancelRef = React.useRef<any>();
   return (
@@ -97,29 +94,53 @@ const confirm = createConfirmation(confirmable(ConfirmModal));
 
 const BookingPage = () => {
   const [loading, setLoading] = React.useState(false);
-  const toast = useToast();
-  const [selectedDate, setSelectedDate] = React.useState<any>();
   const [timezone, setTimezone] = React.useState(momentTZ.tz.guess());
   const [availableSlots, setAvailableSlots] = React.useState([]);
   const [resources, setResources] = React.useState([]);
+  const [selectedDate, setSelectedDate] = React.useState<any>();
   const [selectedResource, setSelectedResource] = React.useState("");
   const [selectedDuration, setSelectedDuration] = React.useState(0);
+  const [slots, setSlots] = React.useState([]);
+  const [filteredSlots, setFilteredSlots] = React.useState([]);
+  const toast = useToast();
 
   const durations = [2, 4, 6, 8, 10];
 
-  const slots = useMemo(() => {
-    return availableSlots.reduce((result: any, slot) => {
-      const key = moment(slot).tz(timezone).format("YYYY-MM-DD");
+  const fetchSlots = async () => {
+    try {
+      const response = await axiosClient.get(`/api/appointments/getAvailableSlots`);
+      setSlots(response.data);
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+    }
+  };
 
-      if (!result[key]) {
-        result[key] = [];
+  const fetchResources = async () => {
+    try {
+      const response = await axiosClient.get("/api/resources");
+      setResources(response.data);
+    } catch (error) {
+      console.error("Error fetching resources:", error);
+    }
+  };
+
+  useEffect(() => {
+    (async function fetchResourcesAndSlots() {
+      try {
+        setLoading(true);
+        await fetchResources();
+        await fetchSlots();
+      } catch (e) {
+        console.log(e);
+        toast({
+          title: "Failed to load resources.",
+          status: "error",
+        });
+      } finally {
+        setLoading(false);
       }
-
-      result[key].push(slot);
-
-      return result;
-    }, {});
-  }, [availableSlots, timezone]);
+    })();
+  }, []);
 
   const generateNext30Days = () => {
     const dates = [];
@@ -133,30 +154,23 @@ const BookingPage = () => {
 
   const next30Days = generateNext30Days();
 
-  useEffect(() => {
-    (async function fetchResources() {
-      try {
-        setLoading(true);
-        const response = await axiosClient.get("/api/resources");
-        setResources(response.data);
-      } catch (e) {
-        console.log(e);
-        toast({
-          title: "Failed to load resources.",
-          status: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
   const handleResourceChange = (id: string) => {
     setSelectedResource(id);
   };
 
   const handleDurationChange = (duration: number) => {
     setSelectedDuration(duration);
+  };
+
+  const handleDateChange = (date: any) => {
+    setSelectedDate(date);
+    const selectedDateSlots = slots.find((slot: any) => slot.date === date);
+    if (selectedDateSlots) {
+      setFilteredSlots(selectedDateSlots);
+      console.log(selectedDateSlots);
+    } else {
+      console.error("No slots found for selected date");
+    }
   };
 
   const bookAppointment = async (date: any) => {
@@ -383,7 +397,7 @@ const BookingPage = () => {
                     key={key}
                     date={date}
                     active={date == selectedDate}
-                    onSelect={(d: any) => setSelectedDate(d)}
+                    onSelect={() => handleDateChange(date)}
                   />
                 ))}
               </Carousel>
@@ -437,7 +451,8 @@ const BookingPage = () => {
                 }}
                 slidesToSlide={3}
               >
-                {slots[selectedDate] ? (
+                <></>
+                {/* {slots[selectedDate] ? (
                   slots[selectedDate].map((time: any, key: number) => (
                     <TimeTile
                       key={key}
@@ -449,13 +464,13 @@ const BookingPage = () => {
                   ))
                 ) : (
                   <></>
-                )}
+                )} */}
               </Carousel>
-              {!slots[selectedDate] && (
+              {/* {!slots[selectedDate] && (
                 <Box textAlign="center" color="#A8A8A8">
                   No available hours
                 </Box>
-              )}
+              )} */}
             </Box>
           </Box>
         </Box>
