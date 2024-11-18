@@ -103,6 +103,9 @@ const BookingPage = () => {
   const [availableSlots, setAvailableSlots] = React.useState([]);
   const [resources, setResources] = React.useState([]);
   const [selectedResource, setSelectedResource] = React.useState("");
+  const [selectedDuration, setSelectedDuration] = React.useState(0);
+
+  const durations = [2, 4, 6, 8, 10];
 
   const slots = useMemo(() => {
     return availableSlots.reduce((result: any, slot) => {
@@ -137,7 +140,11 @@ const BookingPage = () => {
   }, []);
 
   const handleResourceChange = (id: string) => {
-    setSelectedResource(id === selectedResource ? "" : id);
+    setSelectedResource(id);
+  };
+
+  const handleDurationChange = (duration: number) => {
+    setSelectedDuration(duration);
   };
 
   const bookAppointment = async (date: any) => {
@@ -294,7 +301,20 @@ const BookingPage = () => {
                 </Box>
               </h2>
             </Flex>
-            <Box mx="auto" maxWidth="90%" p={4}></Box>
+            <Box mx="auto" maxWidth="90%" p={4}>
+              <Flex flexWrap="wrap" gap={4}>
+                {durations.map((duration: any) => (
+                  <Flex key={duration} alignItems="center">
+                    <input
+                      type="checkbox"
+                      checked={selectedDuration === duration}
+                      onChange={() => handleDurationChange(duration)}
+                    />
+                    <Text ml={3}>{duration} hrs</Text>
+                  </Flex>
+                ))}
+              </Flex>
+            </Box>
           </Box>
 
           <Box borderTop="1px" borderColor="#ebeef1" py="5">
