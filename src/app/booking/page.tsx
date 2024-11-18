@@ -121,6 +121,18 @@ const BookingPage = () => {
     }, {});
   }, [availableSlots, timezone]);
 
+  const generateNext30Days = () => {
+    const dates = [];
+    const timezone = "America/Chicago"; // CST timezone
+    for (let i = 1; i <= 30; i++) {
+      const date = moment().tz(timezone).add(i, "days").format("YYYY-MM-DD");
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  const next30Days = generateNext30Days();
+
   useEffect(() => {
     (async function fetchResources() {
       try {
@@ -366,7 +378,7 @@ const BookingPage = () => {
                 }}
                 slidesToSlide={3}
               >
-                {Object.keys(slots).map((date, key) => (
+                {next30Days.map((date, key) => (
                   <DayTile
                     key={key}
                     date={date}
@@ -375,11 +387,6 @@ const BookingPage = () => {
                   />
                 ))}
               </Carousel>
-              {!Object.keys(slots).length && (
-                <Box textAlign="center" color="#A8A8A8">
-                  No available days
-                </Box>
-              )}
             </Box>
           </Box>
 
