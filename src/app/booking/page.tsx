@@ -108,7 +108,9 @@ const BookingPage = () => {
 
   const fetchSlots = async () => {
     try {
+      console.log("startFetchingSlots")
       const response = await axiosClient.get(`/api/appointments/getAvailableSlots`);
+      console.log("fetchSlots", response.data)
       setSlots(response.data);
     } catch (error) {
       console.error("Error fetching slots:", error);
@@ -133,7 +135,7 @@ const BookingPage = () => {
       } catch (e) {
         console.log(e);
         toast({
-          title: "Failed to load resources.",
+          title: "Failed to load data.",
           status: "error",
         });
       } finally {
