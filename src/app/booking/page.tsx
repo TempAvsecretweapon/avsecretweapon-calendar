@@ -19,7 +19,6 @@ import {
 } from "@chakra-ui/react";
 import React, { useEffect, useMemo } from "react";
 // import CommonButton from "@/app/components/CommonButton";
-import momentTZ from "moment-timezone";
 import moment from "moment";
 import { createConfirmation, confirmable } from "@/app/providers/confirmation";
 import { FaRegCalendarCheck } from "react-icons/fa";
@@ -29,6 +28,7 @@ import TimeTile from "../components/TimeTile";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import axiosClient from "../lib/axios-client";
+import { calculateAvailableStartTimes } from "../lib/availableStartTimeCalculator";
 
 const ConfirmModal = ({ show, proceed, confirmation }: any) => {
   const cancelRef = React.useRef<any>();
@@ -94,23 +94,31 @@ const confirm = createConfirmation(confirmable(ConfirmModal));
 
 const BookingPage = () => {
   const [loading, setLoading] = React.useState(false);
-  const [timezone, setTimezone] = React.useState(momentTZ.tz.guess());
-  const [availableSlots, setAvailableSlots] = React.useState([]);
+
   const [resources, setResources] = React.useState([]);
-  const [selectedDate, setSelectedDate] = React.useState<any>();
+  const [slots, setSlots] = React.useState([]);
+
   const [selectedResource, setSelectedResource] = React.useState("");
   const [selectedDuration, setSelectedDuration] = React.useState(0);
-  const [slots, setSlots] = React.useState([]);
-  const [filteredSlots, setFilteredSlots] = React.useState([]);
+  const [selectedDate, setSelectedDate] = React.useState("");
+  const [filteredSlots, setFilteredSlots] = React.useState<{
+    technicians: any[];
+    date: string;
+  }>({ technicians: [], date: "" });
+
+  const [availableStartTimes, setAvailableStartTimes] = React.useState<any[]>(
+    []
+  );
   const toast = useToast();
 
+  // const timezone = "America/Chicago"; // CST timezone
   const durations = [2, 4, 6, 8, 10];
 
   const fetchSlots = async () => {
     try {
-      console.log("startFetchingSlots")
-      const response = await axiosClient.get(`/api/appointments/getAvailableSlots`);
-      console.log("fetchSlots", response.data)
+      const response = await axiosClient.get(
+        `/api/appointments/getAvailableSlots`
+      );
       setSlots(response.data);
     } catch (error) {
       console.error("Error fetching slots:", error);
@@ -146,15 +154,43 @@ const BookingPage = () => {
 
   const generateNext30Days = () => {
     const dates = [];
-    const timezone = "America/Chicago"; // CST timezone
     for (let i = 1; i <= 30; i++) {
-      const date = moment().tz(timezone).add(i, "days").format("YYYY-MM-DD");
+      const date = moment().add(i, "days").format("YYYY-MM-DD");
       dates.push(date);
     }
     return dates;
   };
 
   const next30Days = generateNext30Days();
+
+  const updateAvailableStartTimes = async () => {
+    if (!selectedResource || !selectedDuration || !selectedDate) return;
+
+    setLoading(true);
+    try {
+      const availableTimes: any[] = await calculateAvailableStartTimes(
+        resources,
+        selectedResource,
+        selectedDuration,
+        filteredSlots
+      );
+
+      console.log("Available Start Times:", availableTimes);
+      setAvailableStartTimes(availableTimes);
+    } catch (e) {
+      console.log(e);
+      toast({
+        title: "Failed to updte start times.",
+        status: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    updateAvailableStartTimes();
+  }, [selectedResource, selectedDuration, filteredSlots]);
 
   const handleResourceChange = (id: string) => {
     setSelectedResource(id);
@@ -169,14 +205,14 @@ const BookingPage = () => {
     const selectedDateSlots = slots.find((slot: any) => slot.date === date);
     if (selectedDateSlots) {
       setFilteredSlots(selectedDateSlots);
-      console.log(selectedDateSlots);
     } else {
       console.error("No slots found for selected date");
     }
   };
 
-  const bookAppointment = async (date: any) => {
-    if (!(await confirm({ confirmation: moment.tz(date, timezone) }))) {
+  const bookAppointment = async (item: any) => {
+    console.log("confirm booking", item);
+    if (!(await confirm({ confirmation: moment(item.time) }))) {
       return;
     }
 
@@ -225,7 +261,7 @@ const BookingPage = () => {
         )}
 
         <Box mt="5">
-          <Box borderTop="1px" borderColor="#ebeef1" py="5">
+          {/* <Box borderTop="1px" borderColor="#ebeef1" py="5">
             <h2>
               <Box
                 border="1px"
@@ -252,7 +288,7 @@ const BookingPage = () => {
                 ))}
               </Select>
             </Box>
-          </Box>
+          </Box> */}
 
           <Box borderTop="1px" borderColor="#ebeef1" py="5">
             <Flex>
@@ -264,7 +300,7 @@ const BookingPage = () => {
                   as="span"
                   px="3"
                 >
-                  02
+                  01
                 </Box>
                 <Box as="span" px="3">
                   Choose Resource
@@ -322,7 +358,7 @@ const BookingPage = () => {
                   as="span"
                   px="3"
                 >
-                  03
+                  02
                 </Box>
                 <Box as="span" px="3">
                   Choose Duration
@@ -355,7 +391,7 @@ const BookingPage = () => {
                   as="span"
                   px="3"
                 >
-                  04
+                  03
                 </Box>
                 <Box as="span" px="3">
                   Choose Day
@@ -415,7 +451,7 @@ const BookingPage = () => {
                 as="span"
                 px="3"
               >
-                05
+                04
               </Box>
               <Box as="span" px="3">
                 Choose Start Time
@@ -453,26 +489,28 @@ const BookingPage = () => {
                 }}
                 slidesToSlide={3}
               >
-                <></>
-                {/* {slots[selectedDate] ? (
-                  slots[selectedDate].map((time: any, key: number) => (
-                    <TimeTile
-                      key={key}
-                      time={time}
-                      timezone={timezone}
-                      active={false}
-                      onSelect={(d: any) => bookAppointment(d)}
-                    />
-                  ))
+                {availableStartTimes.length ? (
+                  availableStartTimes.map((item: any, key: number) => {
+                    const combinedDateTime = `${selectedDate}T${item.time}`;
+                    return (
+                      <TimeTile
+                        key={key}
+                        time={combinedDateTime}
+                        attendee={item.attendee}
+                        active={false}
+                        onSelect={(d: any) => bookAppointment(d)}
+                      />
+                    );
+                  })
                 ) : (
                   <></>
-                )} */}
+                )}
               </Carousel>
-              {/* {!slots[selectedDate] && (
+              {!availableStartTimes.length && (
                 <Box textAlign="center" color="#A8A8A8">
                   No available hours
                 </Box>
-              )} */}
+              )}
             </Box>
           </Box>
         </Box>

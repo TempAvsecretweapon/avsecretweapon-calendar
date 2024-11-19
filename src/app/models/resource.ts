@@ -3,6 +3,8 @@ import { Schema, model, models } from "mongoose";
 const ResourceSchema = new Schema(
   {
     name: { type: String, required: true },
+    level: { type: Number, required: true },
+    type: { type: String, required: true },
     availability: {
       start: { type: String, required: true }, // Example: "07:30"
       end: { type: String, required: true },   // Example: "18:00"

@@ -3,14 +3,14 @@ import moment from "moment";
 
 const TimeTile = ({
   time,
-  timezone,
+  attendee,
   active = false,
   onSelect,
 }: {
   time: string;
-  timezone: string;
+  attendee: any[];
   active: boolean;
-  onSelect: (d: string) => void;
+  onSelect: (d: any) => void;
 }) => {
   return (
     <Flex
@@ -24,13 +24,13 @@ const TimeTile = ({
       borderRadius="2xl"
       bg={active ? "#0074c6" : "white"}
       cursor="pointer"
-      onClick={() => onSelect(time)}
+      onClick={() => onSelect({ time: time, attendee: attendee })}
     >
       <Text color={active ? "white" : "black"} fontWeight="bold" fontSize="md">
-        {moment(time).tz(timezone).format("h:mm")}
+        {moment(time).format("h:mm")}
       </Text>
       <Text color={active ? "white" : "black"} fontSize="x-small">
-        {moment(time).tz(timezone).format("A")}
+        {moment(time).format("A")}
       </Text>
     </Flex>
   );
