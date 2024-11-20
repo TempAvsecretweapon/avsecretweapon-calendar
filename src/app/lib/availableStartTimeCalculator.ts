@@ -16,7 +16,7 @@ const findAvailableResource = async (
     if (
       item.technician.level !== level ||
       bookedTechs.some(
-        (bookedTech) => bookedTech.technician._id === item.technician._id
+        (bookedTech) => bookedTech._id === item.technician._id
       )
     ) {
       continue;
@@ -31,7 +31,7 @@ const findAvailableResource = async (
     }
 
     if (isAvailable) {
-      return item;
+      return item.technician;
     }
   }
 

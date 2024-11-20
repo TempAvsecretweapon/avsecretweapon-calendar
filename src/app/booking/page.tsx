@@ -1,28 +1,17 @@
 "use client";
 
 import {
-  Button,
   Box,
   Flex,
   Text,
-  Select,
   Spinner,
   Modal,
   ModalOverlay,
   ModalContent,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogBody,
-  Divider,
   useToast,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-// import CommonButton from "@/app/components/CommonButton";
 import moment from "moment";
-import { createConfirmation, confirmable } from "@/app/providers/confirmation";
-import { FaRegCalendarCheck } from "react-icons/fa";
-import { BsQuestionCircleFill } from "react-icons/bs";
 import DayTile from "../components/DayTile";
 import TimeTile from "../components/TimeTile";
 import Carousel from "react-multi-carousel";
@@ -31,68 +20,10 @@ import axiosClient from "../lib/axios-client";
 import { calculateAvailableStartTimes } from "../lib/availableStartTimeCalculator";
 import CommonModal from "../components/CommonModal";
 import BookingForm from "../components/BookingForm";
+import CommonSuccessModal from "../components/CommonSuccessModal";
+import checkIcon from "@/app/assets/images/checkbox.svg";
 
-const ConfirmModal = ({ show, proceed, confirmation }: any) => {
-  const cancelRef = React.useRef<any>();
-  return (
-    <AlertDialog
-      isOpen={show}
-      onClose={() => proceed(false)}
-      leastDestructiveRef={cancelRef}
-      isCentered
-      size="xs"
-    >
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogBody>
-            <Flex
-              flexDirection="column"
-              alignItems="center"
-              textAlign="center"
-              py="5"
-            >
-              <BsQuestionCircleFill color="#0074c6" fontSize="4.5rem" />
-              <Text fontWeight="bold" fontSize="2xl" mt="5" mb="2">
-                Are you sure?
-              </Text>
-            </Flex>
-            <Divider />
-            <Flex
-              flexDirection="column"
-              alignItems="center"
-              textAlign="center"
-              py="5"
-            >
-              <Flex my="1" alignItems="center">
-                <FaRegCalendarCheck />{" "}
-                <Text mx="2" fontWeight="500">
-                  {moment(confirmation).format("h:mma")} -{" "}
-                  {moment(confirmation).add(15, "minutes").format("h:mma")}
-                </Text>
-              </Flex>
-              <Flex my="1" alignItems="center">
-                <Text mx="2" fontWeight="500">
-                  {moment(confirmation).format("dddd, MMM Do, YYYY")}
-                </Text>
-              </Flex>
-            </Flex>
-            <Divider />
-            <Button
-              width="100%"
-              colorScheme="blue"
-              mt={4}
-              onClick={() => proceed(true)}
-            >
-              Yes
-            </Button>
-          </AlertDialogBody>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
-  );
-};
-
-const confirm = createConfirmation(confirmable(ConfirmModal));
+// const timezone = "America/Chicago"; // CST timezone
 
 const BookingPage = () => {
   const [loading, setLoading] = useState(false);
@@ -113,9 +44,9 @@ const BookingPage = () => {
   const [availableStartTimes, setAvailableStartTimes] = React.useState<any[]>(
     []
   );
+  const [openSuccessModal, setOpenSuccessModal] = useState<boolean>(false);
   const toast = useToast();
 
-  // const timezone = "America/Chicago"; // CST timezone
   const durations = [2, 4, 6, 8, 10];
 
   const fetchSlots = async () => {
@@ -124,6 +55,16 @@ const BookingPage = () => {
         `/api/appointments/getAvailableSlots`
       );
       setSlots(response.data);
+
+      if(selectedDate) {
+        const tempSlots = response.data;
+        const selectedDateSlots = tempSlots.find((slot: any) => slot.date === selectedDate);
+        if (selectedDateSlots) {
+          setFilteredSlots(selectedDateSlots);
+        } else {
+          console.error("No slots found for selected date");
+        }
+      }  
     } catch (error) {
       console.error("Error fetching slots:", error);
     }
@@ -143,6 +84,7 @@ const BookingPage = () => {
       setLoading(true);
       await fetchResources();
       await fetchSlots();
+      
     } catch (e) {
       console.log(e);
       toast({
@@ -181,7 +123,6 @@ const BookingPage = () => {
         filteredSlots
       );
 
-      console.log("Available Start Times:", availableTimes);
       setAvailableStartTimes(availableTimes);
     } catch (e) {
       console.log(e);
@@ -221,14 +162,22 @@ const BookingPage = () => {
     setOpenBookingForm(true);
   };
 
-  const refreshAvailableSlots = () => {
-    fetchResourcesAndSlots();
+  const refresh = async() => {
+    setLoading(true);
+    await fetchSlots();
+    setLoading(true);
   };
+
+  const handleCloseSuccessModal = () => {
+    setOpenSuccessModal(false);
+    refresh();
+  };
+
 
   return (
     <Box width={{ base: "100%", md: "60vw" }}>
       <Text
-        fontSize={"35px"}
+        fontSize={{base: "1.7rem", md: "2.2rem"}}
         fontWeight={"bold"}
         color={"textColor.heading"}
         fontFamily={"Switzer-Variable"}
@@ -518,7 +467,7 @@ const BookingPage = () => {
         <></>
         <BookingForm
           onCloseModal={() => setOpenBookingForm(false)}
-          onRefresh={() => refreshAvailableSlots()}
+          openSuccessModal={() => setOpenSuccessModal(true)}
           bookingData={{
             resource: (() => {
               const resource: any = resources.find(
@@ -531,6 +480,16 @@ const BookingPage = () => {
           }}
         />
       </CommonModal>
+
+      <CommonSuccessModal
+        open={openSuccessModal}
+        onClose={() => handleCloseSuccessModal()}
+        text={"Your appointment has been successfully booked."}
+        subtext={
+          "Please reach out to support@avsecretweapon.com if you have any questions."
+        }
+        image={checkIcon}
+      />
     </Box>
   );
 };

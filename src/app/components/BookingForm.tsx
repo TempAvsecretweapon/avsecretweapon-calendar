@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Box, Input } from "@chakra-ui/react";
 import { useToast } from "@chakra-ui/react";
-import axios from "axios";
 import CommonButton from "./CommonButton";
 import moment from "moment";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { format, isValidPhoneNumber } from "libphonenumber-js";
+import axiosClient from "../lib/axios-client";
 
 const BookingForm = ({
   onCloseModal,
-  onRefresh,
+  openSuccessModal,
   bookingData,
 }: {
-  onCloseModal?: () => void;
-  onRefresh: () => void;
+  onCloseModal: () => void;
+  openSuccessModal: () => void;
   bookingData: any;
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -50,7 +50,7 @@ const BookingForm = ({
     }
 
     // Phone number validation
-    let formattedNumber = format(phone, 'E.164');
+    let formattedNumber = format(phone, "E.164");
     if (!isValidPhoneNumber(formattedNumber)) {
       toast({
         title: "Validation Error",
@@ -86,7 +86,45 @@ const BookingForm = ({
   };
 
   const bookAppointment = async () => {
-    console.log(bookingInfo);
+    try {
+      // Extract the start time and calculate the end time
+      const startTime = bookingInfo.time.split("T")[1].substring(0, 5);
+      const [hours, minutes] = startTime.split(":").map(Number);
+      const endTime = new Date();
+      endTime.setHours(hours + bookingInfo.duration, minutes);
+
+      const formattedEndTime = `${String(endTime.getHours()).padStart(
+        2,
+        "0"
+      )}:${String(endTime.getMinutes()).padStart(2, "0")}`;
+
+      // Map bookingInfo to match the Appointment schema
+      const appointmentData = {
+        name: bookingInfo.name,
+        email: bookingInfo.email,
+        date: bookingInfo.time.split("T")[0],
+        startTime: startTime,
+        endTime: formattedEndTime,
+        duration: bookingInfo.duration,
+        resource: bookingInfo.resource,
+        status: "confirmed",
+        attendees: bookingInfo.attendee.map(
+          (attendee: { _id: any }) => attendee._id
+        ),
+      };
+
+      const response = await axiosClient.post(
+        "/api/appointments",
+        appointmentData
+      );
+
+      onCloseModal();
+      openSuccessModal();
+
+      console.log("Appointment booked successfully:", response.data);
+    } catch (error: any) {
+      console.error("Failed to book appointment:", error.message);
+    }
   };
 
   const updateBookingdInfo = (key: string, value: string) => {
