@@ -25,9 +25,10 @@ const CommonModal = ({
       <ModalOverlay />
       <ModalContent
         width={"100%"}
-        px={{ base: "10px", lg: "30px" }}
+        px={{ base: "0px", lg: "30px" }}
         maxWidth={maxWidth ? maxWidth : "650px"}
-        mx={5}
+        mx={2}
+        top={0}
       >
         {hideClose ? null : <ModalCloseButton />}
         <ModalBody maxHeight={"650px"} overflow={"auto"} pt={10} pb={6}>

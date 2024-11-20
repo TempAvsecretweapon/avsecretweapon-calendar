@@ -155,7 +155,7 @@ const BookingForm = ({
             .format("hh:mm a")}`}
         />
       </Box>
-      <Box mt={6}>
+      <Box mt={4}>
         <Input
           variant="flushed"
           placeholder="Resource"
@@ -169,7 +169,7 @@ const BookingForm = ({
           value={bookingInfo.resource}
         />
       </Box>
-      <Box mt={6}>
+      <Box mt={4}>
         <Input
           variant="flushed"
           placeholder="Name"
@@ -179,7 +179,7 @@ const BookingForm = ({
         />
       </Box>
 
-      <Box mt={6}>
+      <Box mt={4}>
         <Input
           variant="flushed"
           placeholder="Email"
@@ -189,7 +189,7 @@ const BookingForm = ({
         />
       </Box>
 
-      <Box mt={6}>
+      <Box mt={4}>
         <PhoneInput
           defaultCountry="US"
           limitMaxLength={true}
@@ -206,9 +206,9 @@ const BookingForm = ({
       <CommonButton
         pl={10}
         pr={10}
-        mt={8}
+        mt={5}
         py={5}
-        mb={"20px"}
+        mb={"15px"}
         onClick={onSubmit}
         isLoading={loading}
       >
