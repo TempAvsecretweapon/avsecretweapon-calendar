@@ -17,7 +17,7 @@ import {
   Divider,
   useToast,
 } from "@chakra-ui/react";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 // import CommonButton from "@/app/components/CommonButton";
 import moment from "moment";
 import { createConfirmation, confirmable } from "@/app/providers/confirmation";
@@ -29,6 +29,8 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import axiosClient from "../lib/axios-client";
 import { calculateAvailableStartTimes } from "../lib/availableStartTimeCalculator";
+import CommonModal from "../components/CommonModal";
+import BookingForm from "../components/BookingForm";
 
 const ConfirmModal = ({ show, proceed, confirmation }: any) => {
   const cancelRef = React.useRef<any>();
@@ -93,15 +95,17 @@ const ConfirmModal = ({ show, proceed, confirmation }: any) => {
 const confirm = createConfirmation(confirmable(ConfirmModal));
 
 const BookingPage = () => {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [resources, setResources] = React.useState([]);
-  const [slots, setSlots] = React.useState([]);
+  const [resources, setResources] = useState([]);
+  const [slots, setSlots] = useState([]);
 
-  const [selectedResource, setSelectedResource] = React.useState("");
-  const [selectedDuration, setSelectedDuration] = React.useState(0);
-  const [selectedDate, setSelectedDate] = React.useState("");
-  const [filteredSlots, setFilteredSlots] = React.useState<{
+  const [selectedResource, setSelectedResource] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState(0);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTimeAndAttendee, setSelectedTimeAndAttendee] = useState({});
+  const [openBookingForm, setOpenBookingForm] = useState(false);
+  const [filteredSlots, setFilteredSlots] = useState<{
     technicians: any[];
     date: string;
   }>({ technicians: [], date: "" });
@@ -134,22 +138,24 @@ const BookingPage = () => {
     }
   };
 
+  const fetchResourcesAndSlots = async () => {
+    try {
+      setLoading(true);
+      await fetchResources();
+      await fetchSlots();
+    } catch (e) {
+      console.log(e);
+      toast({
+        title: "Failed to load data.",
+        status: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    (async function fetchResourcesAndSlots() {
-      try {
-        setLoading(true);
-        await fetchResources();
-        await fetchSlots();
-      } catch (e) {
-        console.log(e);
-        toast({
-          title: "Failed to load data.",
-          status: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchResourcesAndSlots();
   }, []);
 
   const generateNext30Days = () => {
@@ -210,24 +216,13 @@ const BookingPage = () => {
     }
   };
 
-  const bookAppointment = async (item: any) => {
-    console.log("confirm booking", item);
-    if (!(await confirm({ confirmation: moment(item.time) }))) {
-      return;
-    }
+  const handleTimeChange = (data: any) => {
+    setSelectedTimeAndAttendee(data);
+    setOpenBookingForm(true);
+  };
 
-    setLoading(true);
-
-    try {
-      console.log("booked");
-    } catch (e) {
-      console.error(e);
-      toast({
-        title: "Error occurred while booking appointment",
-        status: "error",
-      });
-      setLoading(false);
-    }
+  const refreshAvailableSlots = () => {
+    fetchResourcesAndSlots();
   };
 
   return (
@@ -498,7 +493,7 @@ const BookingPage = () => {
                         time={combinedDateTime}
                         attendee={item.attendee}
                         active={false}
-                        onSelect={(d: any) => bookAppointment(d)}
+                        onSelect={(d: any) => handleTimeChange(d)}
                       />
                     );
                   })
@@ -515,6 +510,27 @@ const BookingPage = () => {
           </Box>
         </Box>
       </Box>
+
+      <CommonModal
+        isOpen={openBookingForm}
+        onCloseModal={() => setOpenBookingForm(false)}
+      >
+        <></>
+        <BookingForm
+          onCloseModal={() => setOpenBookingForm(false)}
+          onRefresh={() => refreshAvailableSlots()}
+          bookingData={{
+            resource: (() => {
+              const resource: any = resources.find(
+                (res: { _id: any }) => res._id === selectedResource
+              );
+              return resource ? resource.name : "Unknown Resource";
+            })(),
+            duration: selectedDuration,
+            ...selectedTimeAndAttendee,
+          }}
+        />
+      </CommonModal>
     </Box>
   );
 };

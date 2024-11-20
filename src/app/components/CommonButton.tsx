@@ -11,7 +11,7 @@ interface IntakeButtonProps extends ButtonProps {
   mt?: string | number;
 }
 
-const IntakeButton: ComponentWithAs<"button", IntakeButtonProps> = (props) => {
+const CommonButton: ComponentWithAs<"button", IntakeButtonProps> = (props) => {
   return (
     <Box mt={props.mt}>
       <Text color={"red"} mb={2}>
@@ -23,8 +23,8 @@ const IntakeButton: ComponentWithAs<"button", IntakeButtonProps> = (props) => {
         fontSize={"lg"}
         fontWeight={"semibold"}
         borderRadius={"5px"}
-        height={"60px"}
-        bg={"brandPrimary.500"}
+        height={"40px"}
+        bg={"blue.500"}
         width={"100%"}
         color={"white"}
         {...props}
@@ -35,4 +35,4 @@ const IntakeButton: ComponentWithAs<"button", IntakeButtonProps> = (props) => {
   );
 };
 
-export default IntakeButton;
+export default CommonButton;
