@@ -30,8 +30,9 @@ const BookingForm = ({
         title: "Validation Error",
         description: "Name cannot be empty.",
         status: "error",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
+        position: "top",
       });
       return false;
     }
@@ -43,8 +44,9 @@ const BookingForm = ({
         title: "Validation Error",
         description: "Please enter a valid email address.",
         status: "error",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
+        position: "top",
       });
       return false;
     }
@@ -56,8 +58,9 @@ const BookingForm = ({
         title: "Validation Error",
         description: "Please enter a valid phone number.",
         status: "error",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
+        position: "top",
       });
       return false;
     }
@@ -77,8 +80,9 @@ const BookingForm = ({
         description:
           e?.message || "Something went wrong. Please contact support.",
         status: "error",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
+        position: "top",
       });
     } finally {
       setLoading(false);

@@ -21,7 +21,7 @@ const CommonModal = ({
   maxWidth?: number | string;
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onCloseModal}>
+    <Modal isOpen={isOpen} onClose={onCloseModal} blockScrollOnMount={false}>
       <ModalOverlay />
       <ModalContent
         width={"100%"}
