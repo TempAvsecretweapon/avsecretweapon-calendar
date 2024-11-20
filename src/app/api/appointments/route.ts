@@ -3,7 +3,7 @@ import { connectDB } from "@/app/lib/connect-db";
 import Appointment from "@/app/models/appointment";
 import moment from "moment-timezone";
 
-export async function POST(req: { json: () => any }) {
+export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
