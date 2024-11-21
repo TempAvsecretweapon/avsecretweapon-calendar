@@ -18,8 +18,6 @@ export async function GET() {
       date: { $in: next30Days },
     }).populate("attendees");
 
-    console.log(appointments.length);
-
     // Get all technicians
     const technicians = await Technician.find();
 
@@ -60,12 +58,7 @@ export async function GET() {
       })),
     }));
 
-     // Disable caching
-     const headers = {
-      "Cache-Control": "no-store",
-    };
-
-    return NextResponse.json(response, { status: 200, headers });
+    return NextResponse.json(response, { status: 200 });
   } catch (e) {
     console.error("Error fetching available slots:", e);
     return NextResponse.json(
