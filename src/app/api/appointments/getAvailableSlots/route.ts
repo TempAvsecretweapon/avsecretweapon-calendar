@@ -4,6 +4,7 @@ import Appointment from "@/app/models/appointment";
 import Technician from "@/app/models/technician";
 import moment from "moment-timezone";
 
+export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     await connectDB();
