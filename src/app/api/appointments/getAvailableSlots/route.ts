@@ -9,15 +9,16 @@ export async function GET() {
     await connectDB();
 
     // Generate the next 30 days
-    const timezone = "America/Chicago"; // CST timezone
     const next30Days = Array.from({ length: 30 }, (_, i) =>
-      moment().tz(timezone).add(i + 1, "days").format("YYYY-MM-DD")
+      moment().add(i + 1, "days").format("YYYY-MM-DD")
     );
 
     // Fetch all appointments for the next 30 days
     const appointments = await Appointment.find({
       date: { $in: next30Days },
     }).populate("attendees");
+
+    console.log(appointments);
 
     // Get all technicians
     const technicians = await Technician.find();
