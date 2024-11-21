@@ -55,6 +55,7 @@ const BookingPage = () => {
         `/api/appointments/getAvailableSlots`
       );
       setSlots(response.data);
+      console.log("available slots: ", response.data);
 
       if(selectedDate) {
         const tempSlots = response.data;

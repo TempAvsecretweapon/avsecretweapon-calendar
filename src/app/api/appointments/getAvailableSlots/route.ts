@@ -60,7 +60,12 @@ export async function GET() {
       })),
     }));
 
-    return NextResponse.json(response, { status: 200 });
+     // Disable caching
+     const headers = {
+      "Cache-Control": "no-store",
+    };
+
+    return NextResponse.json(response, { status: 200, headers });
   } catch (e) {
     console.error("Error fetching available slots:", e);
     return NextResponse.json(
