@@ -18,7 +18,7 @@ export async function GET() {
       date: { $in: next30Days },
     }).populate("attendees");
 
-    console.log(appointments);
+    console.log(appointments.length);
 
     // Get all technicians
     const technicians = await Technician.find();
