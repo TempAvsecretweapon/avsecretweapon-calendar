@@ -16,7 +16,6 @@ import DayTile from "../components/DayTile";
 import TimeTile from "../components/TimeTile";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import axiosClient from "../lib/axios-client";
 import { calculateAvailableStartTimes } from "../lib/availableStartTimeCalculator";
 import CommonModal from "../components/CommonModal";
 import BookingForm from "../components/BookingForm";
@@ -51,21 +50,28 @@ const BookingPage = () => {
 
   const fetchSlots = async () => {
     try {
-      const response = await axiosClient.get(
-        `/api/appointments/getAvailableSlots`
-      );
-      setSlots(response.data);
-      console.log("available slots: ", response.data);
+      const res = await fetch(`/api/appointments/getAvailableSlots`, {
+        cache: "no-store",
+      });
 
-      if(selectedDate) {
-        const tempSlots = response.data;
-        const selectedDateSlots = tempSlots.find((slot: any) => slot.date === selectedDate);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch slots: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setSlots(data);
+      console.log("available slots: ", data);
+
+      if (selectedDate) {
+        const selectedDateSlots = data.find(
+          (slot: any) => slot.date === selectedDate
+        );
         if (selectedDateSlots) {
           setFilteredSlots(selectedDateSlots);
         } else {
           console.error("No slots found for selected date");
         }
-      }  
+      }
     } catch (error) {
       console.error("Error fetching slots:", error);
     }
@@ -73,8 +79,14 @@ const BookingPage = () => {
 
   const fetchResources = async () => {
     try {
-      const response = await axiosClient.get("/api/resources");
-      setResources(response.data);
+      const res = await fetch("/api/resources");
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch resources: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setResources(data);
     } catch (error) {
       console.error("Error fetching resources:", error);
     }
@@ -85,7 +97,6 @@ const BookingPage = () => {
       setLoading(true);
       await fetchResources();
       await fetchSlots();
-      
     } catch (e) {
       console.log(e);
       toast({
@@ -163,7 +174,7 @@ const BookingPage = () => {
     setOpenBookingForm(true);
   };
 
-  const refresh = async() => {
+  const refresh = async () => {
     setLoading(true);
     await fetchSlots();
     setLoading(true);
@@ -174,11 +185,10 @@ const BookingPage = () => {
     refresh();
   };
 
-
   return (
     <Box width={{ base: "100%", md: "60vw" }}>
       <Text
-        fontSize={{base: "1.7rem", md: "2.2rem"}}
+        fontSize={{ base: "1.7rem", md: "2.2rem" }}
         fontWeight={"bold"}
         color={"textColor.heading"}
         fontFamily={"Switzer-Variable"}

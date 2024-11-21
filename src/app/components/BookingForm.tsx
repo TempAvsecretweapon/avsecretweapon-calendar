@@ -6,7 +6,6 @@ import moment from "moment";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { format, isValidPhoneNumber } from "libphonenumber-js";
-import axiosClient from "../lib/axios-client";
 
 const BookingForm = ({
   onCloseModal,
@@ -117,15 +116,23 @@ const BookingForm = ({
         ),
       };
 
-      const response = await axiosClient.post(
-        "/api/appointments",
-        appointmentData
-      );
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(appointmentData),
+      });
+  
+      if (!res.ok) {
+        throw new Error(`Failed to create appointment: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("Appointment booked successfully:", data);
 
       onCloseModal();
       openSuccessModal();
-
-      console.log("Appointment booked successfully:", response.data);
     } catch (error: any) {
       console.error("Failed to book appointment:", error.message);
     }
