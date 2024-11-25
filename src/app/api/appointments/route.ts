@@ -39,13 +39,13 @@ async function insertGoogleCalendarEvent(
     throw new Error("No technicians found for the provided attendees");
   }
 
-  const event = {
+  const event: any = {
     summary: `${appointmentData.name} - ${appointmentData.resource}`,
-    description: `Appointment with ${
-      appointmentData.name
-    } and technicians: ${technicianDetails
-      .map((tech: any) => tech.name)
-      .join(", ")}`,
+    description: `Appointment Details:
+- Client Name: ${appointmentData.name}
+- Resource: ${appointmentData.resource}
+- Description: ${appointmentData.description || "N/A"}
+- Technicians: ${technicianDetails.map((tech: any) => tech.name).join(", ")}`,
     start: {
       dateTime: startTime,
       timeZone: "America/Chicago",
@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
       startTime,
       endTime,
       duration,
+      description,
       status,
       attendees,
     } = body;
@@ -113,6 +114,7 @@ export async function POST(req: NextRequest) {
       startTime,
       endTime,
       duration,
+      description,
       status,
       attendees,
     });
@@ -136,6 +138,7 @@ export async function POST(req: NextRequest) {
       startTime,
       endTime,
       resource,
+      description,
       attendees,
     });
 

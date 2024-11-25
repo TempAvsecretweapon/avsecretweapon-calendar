@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Input } from "@chakra-ui/react";
+import { Box, Input, Textarea } from "@chakra-ui/react";
 import { useToast } from "@chakra-ui/react";
 import CommonButton from "./CommonButton";
 import moment from "moment";
@@ -110,6 +110,7 @@ const BookingForm = ({
         endTime: formattedEndTime,
         duration: bookingInfo.duration,
         resource: bookingInfo.resource,
+        description: bookingInfo?.description || "",
         status: "confirmed",
         attendees: bookingInfo.attendee.map(
           (attendee: { _id: any }) => attendee._id
@@ -123,7 +124,7 @@ const BookingForm = ({
         },
         body: JSON.stringify(appointmentData),
       });
-  
+
       if (!res.ok) {
         throw new Error(`Failed to create appointment: ${res.status}`);
       }
@@ -207,6 +208,19 @@ const BookingForm = ({
               updateBookingdInfo("phone", value);
             }
           }}
+        />
+      </Box>
+
+      <Box mt={4}>
+        <Textarea
+          variant="flushed"
+          placeholder="Description"
+          fontSize="lg"
+          _placeholder={{ color: "gray.500" }}
+          onChange={(e: any) =>
+            updateBookingdInfo("description", e.target.value)
+          }
+          resize="vertical" // Allows resizing vertically only
         />
       </Box>
 

@@ -8,6 +8,7 @@ const AppointmentSchema = new Schema(
     startTime: { type: String, required: true }, // Example: "07:30"
     endTime: { type: String, required: true }, // Example: "09:30"
     duration: { type: Number, required: true }, // Duration in hours, Example: 2
+    description: { type: String },
     resource: { type: String, required: true }, // Example: "Level 1 Team"
     status: {
       type: String,
