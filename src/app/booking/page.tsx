@@ -9,10 +9,11 @@ import {
   ModalOverlay,
   ModalContent,
   useToast,
+  Select,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import moment from "moment";
-import DayTile from "../components/DayTile";
+// import moment from "moment";
+// import DayTile from "../components/DayTile";
 import TimeTile from "../components/TimeTile";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -21,6 +22,8 @@ import CommonModal from "../components/CommonModal";
 import BookingForm from "../components/BookingForm";
 import CommonSuccessModal from "../components/CommonSuccessModal";
 import checkIcon from "@/app/assets/images/checkbox.svg";
+import Calendar, { OnArgs } from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 // const timezone = "America/Chicago"; // CST timezone
 
@@ -30,6 +33,15 @@ const BookingPage = () => {
   const [resources, setResources] = useState([]);
   const [slots, setSlots] = useState([]);
 
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const currentDate = new Date();
+    const formattedMonth = `${currentDate.getFullYear()}-${(
+      currentDate.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}`;
+    return formattedMonth;
+  });
   const [selectedResource, setSelectedResource] = useState("");
   const [selectedDuration, setSelectedDuration] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
@@ -50,9 +62,12 @@ const BookingPage = () => {
 
   const fetchSlots = async () => {
     try {
-      const res = await fetch(`/api/appointments/getAvailableSlots`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `/api/appointments/getAvailableSlots?month=${selectedMonth}`,
+        {
+          cache: "no-store",
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`Failed to fetch slots: ${res.status}`);
@@ -78,6 +93,8 @@ const BookingPage = () => {
   };
 
   const fetchResources = async () => {
+    if (resources.length > 0) return;
+
     try {
       const res = await fetch("/api/resources");
 
@@ -110,18 +127,7 @@ const BookingPage = () => {
 
   useEffect(() => {
     fetchResourcesAndSlots();
-  }, []);
-
-  const generateNext30Days = () => {
-    const dates = [];
-    for (let i = 1; i <= 30; i++) {
-      const date = moment().add(i, "days").format("YYYY-MM-DD");
-      dates.push(date);
-    }
-    return dates;
-  };
-
-  const next30Days = generateNext30Days();
+  }, [selectedMonth]);
 
   const updateAvailableStartTimes = async () => {
     if (!selectedResource || !selectedDuration || !selectedDate) return;
@@ -159,13 +165,33 @@ const BookingPage = () => {
     setSelectedDuration(duration);
   };
 
-  const handleDateChange = (date: any) => {
-    setSelectedDate(date);
-    const selectedDateSlots = slots.find((slot: any) => slot.date === date);
+  const handleDateChange = (date: Date) => {
+    const localDate = new Date(date);
+    localDate.setHours(0, 0, 0, 0);
+    const formattedDate = localDate.toLocaleDateString("en-CA");
+
+    setSelectedDate(formattedDate);
+
+    const formattedMonth = `${localDate.getFullYear()}-${(
+      localDate.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}`;
+
+    if (formattedMonth != selectedMonth) {
+      setSelectedMonth(formattedMonth);
+      return;
+    }
+
+    const selectedDateSlots = slots.find(
+      (slot: any) => slot.date === formattedDate
+    );
+    console.log(formattedDate, selectedDateSlots);
     if (selectedDateSlots) {
       setFilteredSlots(selectedDateSlots);
     } else {
       console.error("No slots found for selected date");
+      setFilteredSlots({ technicians: [], date: "" });
     }
   };
 
@@ -354,46 +380,11 @@ const BookingPage = () => {
               </h2>
             </Flex>
             <Box mx="auto" maxWidth="90%" p={4}>
-              <Carousel
-                draggable
-                arrows
-                responsive={{
-                  desktop: {
-                    breakpoint: {
-                      max: 3000,
-                      min: 1024,
-                    },
-                    items: 8,
-                    partialVisibilityGutter: 40,
-                  },
-                  mobile: {
-                    breakpoint: {
-                      max: 464,
-                      min: 0,
-                    },
-                    items: 3,
-                    partialVisibilityGutter: 30,
-                  },
-                  tablet: {
-                    breakpoint: {
-                      max: 1024,
-                      min: 464,
-                    },
-                    items: 4,
-                    partialVisibilityGutter: 30,
-                  },
-                }}
-                slidesToSlide={3}
-              >
-                {next30Days.map((date, key) => (
-                  <DayTile
-                    key={key}
-                    date={date}
-                    active={date == selectedDate}
-                    onSelect={() => handleDateChange(date)}
-                  />
-                ))}
-              </Carousel>
+              <Calendar
+                onChange={(value) => handleDateChange(value as Date)}
+                locale="en-US"
+                className="calender-body"
+              />
             </Box>
           </Box>
 
