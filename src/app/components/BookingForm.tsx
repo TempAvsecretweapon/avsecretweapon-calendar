@@ -214,7 +214,7 @@ const BookingForm = ({
       <Box mt={4}>
         <Textarea
           variant="flushed"
-          placeholder="Description"
+          placeholder="Description of work"
           fontSize="lg"
           _placeholder={{ color: "gray.500" }}
           onChange={(e: any) =>
