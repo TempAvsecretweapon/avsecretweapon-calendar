@@ -39,6 +39,11 @@ async function insertGoogleCalendarEvent(
     throw new Error("No technicians found for the provided attendees");
   }
 
+  const eventAttendees = technicianDetails.map((tech: any) => ({
+    email: tech.email, // Assuming each technician has an email field
+    displayName: tech.name, // Name of the technician
+  }));
+
   const event: any = {
     summary: `${appointmentData.name} - ${appointmentData.resource}`,
     description: `Appointment Details:
@@ -54,6 +59,7 @@ async function insertGoogleCalendarEvent(
       dateTime: endTime,
       timeZone: "America/Chicago",
     },
+    attendees: eventAttendees,
   };
 
   try {
@@ -61,7 +67,7 @@ async function insertGoogleCalendarEvent(
       calendarId: primaryCalendarId,
       requestBody: event,
     });
-    return res.data;
+    return res.data.id;
   } catch (error) {
     console.error("Error inserting event into Google Calendar:", error);
     throw new Error("Failed to insert event into Google Calendar");
@@ -105,20 +111,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create a new appointment
-    const newAppointment = await Appointment.create({
-      name,
-      email,
-      resource,
-      date,
-      startTime,
-      endTime,
-      duration,
-      description,
-      status,
-      attendees,
-    });
-
     // Get the access token using the refresh token
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
@@ -131,7 +123,7 @@ export async function POST(req: NextRequest) {
     const accessToken = await getAccessToken(refreshToken);
 
     // Insert event into the primary calendar
-    await insertGoogleCalendarEvent(accessToken || "", {
+    const googleEventId = await insertGoogleCalendarEvent(accessToken || "", {
       name,
       email,
       date,
@@ -140,6 +132,29 @@ export async function POST(req: NextRequest) {
       resource,
       description,
       attendees,
+    });
+
+    const existingAppointment = await Appointment.findOne({ googleEventId });
+
+    if (existingAppointment) {
+      console.log(`Appointment with googleEventId ${googleEventId} already exists.`);
+      return; // Exit early to avoid adding a duplicate document
+    }
+    
+    
+    // Create a new appointment
+    const newAppointment = await Appointment.create({
+      name,
+      email,
+      resource,
+      date,
+      startTime,
+      endTime,
+      duration,
+      description,
+      status,
+      attendees,
+      googleEventId
     });
 
     return NextResponse.json(
