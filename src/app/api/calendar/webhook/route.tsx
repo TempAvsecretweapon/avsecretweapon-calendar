@@ -106,7 +106,7 @@ const handleEvents = async (allEvents: any[]) => {
     }
 
     const { summary, start, end, attendees } = event;
-    console.log({ summary, start, end, attendees });
+    console.log("event", { id, summary, start, end, attendees });
 
     const startDate = start.dateTime ? start.dateTime : start.date;
     const endDate = end.dateTime ? end.dateTime : end.date;
@@ -166,6 +166,8 @@ const handleEvents = async (allEvents: any[]) => {
 
       appointmentData.attendees = technicianIds.filter((id) => id !== null); // Only include valid IDs
     }
+
+    console.log("appointmentData", appointmentData);
 
     if (existingAppointment) {
       // Update existing appointment if times or attendees differ
