@@ -257,7 +257,7 @@ export async function POST(req: NextRequest) {
       await connectDB();
 
       const allEvents = await getEvents();
-      handleEvents(allEvents);
+      await handleEvents(allEvents);
     }
 
     return NextResponse.json({ status: "success" });
