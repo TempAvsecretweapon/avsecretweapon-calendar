@@ -9,6 +9,12 @@ async function getAccessToken(refreshToken: string) {
   return tokens.credentials.access_token;
 }
 
+const generateUniqueId = () => {
+  return (
+    Date.now().toString(36) + Math.random().toString(36).substring(2, 15)
+  ).toUpperCase();
+};
+
 export async function GET() {
   try {
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
@@ -25,10 +31,12 @@ export async function GET() {
       auth: oauth2Client,
     });
 
+    const uniqueChannelId = generateUniqueId();
+
     const response = await calendarClient.events.watch({
       calendarId: "primary",
       requestBody: {
-        id: "avsecretweapone_calendar",
+        id: uniqueChannelId,
         type: "web_hook",
         address: process.env.WEBHOOK_URL,
       },
