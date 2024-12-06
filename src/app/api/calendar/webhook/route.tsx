@@ -92,7 +92,6 @@ const getEvents = async () => {
 
 const handleEvents = async (allEvents: any[]) => {
   for (const event of allEvents) {
-    console.log(event);
 
     const { id, status } = event;
     if (status === "cancelled") {
@@ -107,6 +106,7 @@ const handleEvents = async (allEvents: any[]) => {
     }
 
     const { summary, start, end, attendees } = event;
+    console.log({ summary, start, end, attendees });
 
     const startDate = start.dateTime ? start.dateTime : start.date;
     const endDate = end.dateTime ? end.dateTime : end.date;
