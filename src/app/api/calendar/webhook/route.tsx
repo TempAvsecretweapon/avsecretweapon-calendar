@@ -109,7 +109,7 @@ const handleEvents = async (allEvents: any[]) => {
     const startDate = start.dateTime ? start.dateTime : start.date;
     const endDate = end.dateTime ? end.dateTime : end.date;
 
-    // Calculate the duration in 30-minute intervals
+    // Calculate the duration in 1 hour intervals
     const duration = Math.ceil(
       (new Date(endDate).getTime() - new Date(startDate).getTime()) /
         (60 * 60 * 1000)
@@ -250,7 +250,7 @@ export async function POST(req: NextRequest) {
       changeType === "updated" ||
       changeType === "created"
     ) {
-      connectDB();
+      await connectDB();
 
       const allEvents = await getEvents();
       handleEvents(allEvents);
