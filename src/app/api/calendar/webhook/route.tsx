@@ -92,6 +92,8 @@ const getEvents = async () => {
 
 const handleEvents = async (allEvents: any[]) => {
   for (const event of allEvents) {
+    console.log(event);
+
     const { id, status } = event;
     if (status === "cancelled") {
       const existingAppointment = await Appointment.findOne({
