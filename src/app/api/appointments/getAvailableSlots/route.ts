@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
           (parseInt(appt.startTime.split(":")[0], 10) - 7) * 2 +
             parseInt(appt.startTime.split(":")[1], 10) / 30
         );
-        const endSlot = Math.floor(
+        const endSlot = Math.ceil(
           (parseInt(appt.endTime.split(":")[0], 10) - 7) * 2 +
             parseInt(appt.endTime.split(":")[1], 10) / 30
         );

@@ -92,15 +92,16 @@ const getEvents = async () => {
 
 const handleEvents = async (allEvents: any[]) => {
   for (const event of allEvents) {
-
     const { id, status } = event;
+
     if (status === "cancelled") {
-      const existingAppointment = await Appointment.findOne({
-        googleEventId: id,
-      });
-      if (existingAppointment) {
-        await existingAppointment.deleteOne();
-        console.log(`Deleted appointment for cancelled event: ${id}`);
+      const result = await Appointment.deleteMany({ googleEventId: id });
+      if (result.deletedCount > 0) {
+        console.log(
+          `Deleted ${result.deletedCount} appointments for cancelled event: ${id}`
+        );
+      } else {
+        console.log(`No appointments found for cancelled event: ${id}`);
       }
       continue;
     }
@@ -133,10 +134,9 @@ const handleEvents = async (allEvents: any[]) => {
     });
     const date = new Date(startDate).toISOString().split("T")[0]; // Format as "YYYY-MM-DD"
 
-    // Look for the appointment by Google Event ID (if already exists)
-    const existingAppointment = await Appointment.findOne({
-      googleEventId: id,
-    });
+    // Remove all appointments with the same Google Event ID
+    await Appointment.deleteMany({ googleEventId: id });
+    console.log(`Deleted all appointments for Google Event ID: ${id}`);
 
     // Prepare data for the appointment
     const appointmentData: any = {
@@ -169,35 +169,10 @@ const handleEvents = async (allEvents: any[]) => {
 
     console.log("appointmentData", appointmentData);
 
-    if (existingAppointment) {
-      // Update existing appointment if times or attendees differ
-      if (
-        existingAppointment.startTime !== startTime ||
-        existingAppointment.endTime !== endTime ||
-        existingAppointment.duration !== duration ||
-        existingAppointment.date !== date ||
-        !arraysAreEqual(
-          existingAppointment.attendees,
-          appointmentData.attendees
-        )
-      ) {
-        existingAppointment.startTime = startTime;
-        existingAppointment.endTime = endTime;
-        existingAppointment.duration = duration;
-        existingAppointment.date = date;
-        existingAppointment.attendees = appointmentData.attendees;
-        await existingAppointment.save();
-
-        console.log(`Updated appointment for event: ${id}`);
-      } else {
-        console.log("An appointment with the same details already exists.");
-      }
-    } else {
-      // Create a new appointment if none exists
-      const newAppointment = new Appointment(appointmentData);
-      await newAppointment.save();
-      console.log(`Created new appointment for event: ${id}`);
-    }
+    // Create a new appointment if none exists
+    const newAppointment = new Appointment(appointmentData);
+    await newAppointment.save();
+    console.log(`Created new appointment for event: ${id}`);
   }
 };
 
