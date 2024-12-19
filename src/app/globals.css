@@ -45,6 +45,7 @@ a {
   height: 50px;
   width: 100%;
 }
+
 .phoneInputCustom input:focus {
   border-bottom: 2px solid #0074c6 !important;
 }
@@ -58,7 +59,8 @@ a {
 .phoneInputCustom .PhoneInputCountry {
   display: none;
 }
-.phoneInputCustom input:focus{
+
+.phoneInputCustom input:focus {
   outline: none;
   border-color: inherit;
   -webkit-box-shadow: none;
