@@ -486,9 +486,9 @@ const BookingPage = () => {
       <CommonSuccessModal
         open={openSuccessModal}
         onClose={() => handleCloseSuccessModal()}
-        text={"Your appointment has been successfully booked."}
+        text={"Your appointment has been tentatively booked. Please check you email for a deposit invoice to confirm your appointment."}
         subtext={
-          "Please reach out to support@avsecretweapon.com if you have any questions."
+          "Please reach out to GoInstall@AVSecretWeapon.com if you have any questions."
         }
         image={checkIcon}
       />
