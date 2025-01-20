@@ -63,7 +63,7 @@ const getEvents = async () => {
   };
 
   const syncToken = await getSyncToken();
-  
+
   if (syncToken) {
     requestParams.syncToken = syncToken;
   }
@@ -130,7 +130,8 @@ const getEvents = async () => {
 
 const handleEvents = async (allEvents: any[]) => {
   for (const event of allEvents) {
-    const { id, status } = event;
+    const { id, status, summary, start, end, attendees } = event;
+    console.log("event", { id, status, summary, start, end, attendees });
 
     if (status === "cancelled") {
       const result = await Appointment.deleteMany({ googleEventId: id });
@@ -143,9 +144,6 @@ const handleEvents = async (allEvents: any[]) => {
       }
       continue;
     }
-
-    const { summary, start, end, attendees } = event;
-    console.log("event", { id, summary, start, end, attendees });
 
     const startDate = start.dateTime ? start.dateTime : start.date;
     const endDate = end.dateTime ? end.dateTime : end.date;
