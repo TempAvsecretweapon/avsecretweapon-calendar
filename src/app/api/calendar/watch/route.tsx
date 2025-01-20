@@ -32,13 +32,15 @@ export async function GET() {
     });
 
     const uniqueChannelId = generateUniqueId();
-
+    const expirationTime = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString(); // ISO 8601 format
+    
     const response = await calendarClient.events.watch({
       calendarId: "primary",
       requestBody: {
         id: uniqueChannelId,
         type: "web_hook",
         address: process.env.WEBHOOK_URL,
+        expiration: expirationTime,
       },
     });
 

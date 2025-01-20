@@ -63,7 +63,7 @@ const getEvents = async () => {
   };
 
   const syncToken = await getSyncToken();
-
+  
   if (syncToken) {
     requestParams.syncToken = syncToken;
   }
@@ -71,21 +71,59 @@ const getEvents = async () => {
   let allEvents: any[] = [];
   let pageToken = null;
 
+  // Attempt to fetch events with sync token first
+  let retryWithFullSync = false;
+
   do {
-    // console.log("pageToken", pageToken);
-    if (pageToken) {
-      requestParams.pageToken = pageToken;
-    }
+    try {
+      if (pageToken) {
+        requestParams.pageToken = pageToken;
+      }
 
-    const response = await calendarClient.events.list(requestParams);
-    allEvents = allEvents.concat(response.data.items);
+      const response = await calendarClient.events.list(requestParams);
+      allEvents = allEvents.concat(response.data.items);
 
-    pageToken = response.data.nextPageToken;
-    if (!pageToken) {
-      const newSyncToken = response.data.nextSyncToken;
-      await saveSyncToken(newSyncToken);
+      pageToken = response.data.nextPageToken;
+      if (!pageToken) {
+        const newSyncToken = response.data.nextSyncToken;
+        await saveSyncToken(newSyncToken);
+      }
+    } catch (error: any) {
+      // Check for the sync token invalid error
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.error &&
+        error.response.data.error.message ===
+          "Sync token is no longer valid, a full sync is required."
+      ) {
+        console.log("Sync token is invalid. Falling back to full sync.");
+        retryWithFullSync = true;
+        break; // Exit the loop to restart without sync token
+      } else {
+        throw error; // Re-throw other errors
+      }
     }
   } while (pageToken);
+
+  // Retry with full sync (without sync token)
+  if (retryWithFullSync) {
+    // Reset requestParams without the syncToken
+    delete requestParams.syncToken;
+    pageToken = null;
+
+    // Perform a full sync
+    do {
+      if (pageToken) {
+        requestParams.pageToken = pageToken;
+      }
+
+      const response = await calendarClient.events.list(requestParams);
+      allEvents = allEvents.concat(response.data.items);
+
+      pageToken = response.data.nextPageToken;
+    } while (pageToken);
+  }
 
   return allEvents;
 };
