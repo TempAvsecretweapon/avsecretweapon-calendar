@@ -131,7 +131,7 @@ const getEvents = async () => {
 const handleEvents = async (allEvents: any[]) => {
   for (const event of allEvents) {
     const { id, status, summary, start, end, attendees } = event;
-    console.log("event", { id, status, summary, start, end, attendees });
+    console.log("event", { id, status });
 
     if (status === "cancelled") {
       const result = await Appointment.deleteMany({ googleEventId: id });
