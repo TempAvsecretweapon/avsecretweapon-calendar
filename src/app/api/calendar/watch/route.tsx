@@ -32,7 +32,7 @@ export async function GET() {
     });
 
     const uniqueChannelId = generateUniqueId();
-    const expirationTime = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString(); // ISO 8601 format
+    const expirationTime = new Date(Date.now() + 2 * 30 * 24 * 60 * 60 * 1000).toISOString(); // ISO 8601 format
     
     const response = await calendarClient.events.watch({
       calendarId: "primary",
